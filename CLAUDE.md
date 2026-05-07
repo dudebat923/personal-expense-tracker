@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation First
+
+Before implementing any feature, read every file in the `docs/` directory that is relevant to the work. Treat those files as the authoritative specification — the code must conform to them, not the other way around.
+
+- **UI work** (components, layouts, styling): read `docs/ui.md` in full before writing a single class or element.
+- **New features or pages**: check `docs/` for any doc that covers the domain (data model, API design, auth, etc.) before writing code.
+- If no doc covers the area you are about to touch, implement using existing patterns in the codebase and note the gap — do not invent conventions.
+
 ## Commands
 
 ```bash
