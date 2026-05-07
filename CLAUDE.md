@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## AI Workflow
+
+**Read `docs/ai-workflow.md` before writing any code.** It defines the required plan-first process: propose a technical plan, wait for explicit approval, then implement. No code is written without an approved plan.
+
 ## Documentation First
 
 Before implementing any feature, read every file in the `docs/` directory that is relevant to the work. Treat those files as the authoritative specification — the code must conform to them, not the other way around.
