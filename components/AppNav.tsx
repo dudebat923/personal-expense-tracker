@@ -18,6 +18,12 @@ const links = [
 export function AppNav() {
   const pathname = usePathname()
 
+  // Only the most specific matching link is active (longest href wins).
+  // This prevents /expenses from staying highlighted on /expenses/categories.
+  const activeHref = links
+    .filter(({ href }) => pathname === href || pathname.startsWith(href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href
+
   return (
     <>
       {/* Desktop sidebar */}
@@ -31,7 +37,7 @@ export function AppNav() {
 
           <nav className="flex flex-col gap-1 flex-1">
             {links.map(({ href, label, Icon }) => {
-              const active = pathname === href || pathname.startsWith(href + "/")
+              const active = href === activeHref
               return (
                 <Link
                   key={href}
