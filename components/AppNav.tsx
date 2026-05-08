@@ -5,16 +5,24 @@ import { usePathname } from "next/navigation"
 import {
   HomeIcon,
   CreditCardIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline"
 import { signOut } from "next-auth/react"
 
 const links = [
   { href: "/dashboard", label: "Dashboard", Icon: HomeIcon },
   { href: "/expenses", label: "Expenses", Icon: CreditCardIcon },
+  { href: "/expenses/categories", label: "Categories", Icon: TagIcon },
 ]
 
 export function AppNav() {
   const pathname = usePathname()
+
+  // Only the most specific matching link is active (longest href wins).
+  // This prevents /expenses from staying highlighted on /expenses/categories.
+  const activeHref = links
+    .filter(({ href }) => pathname === href || pathname.startsWith(href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href
 
   return (
     <>
@@ -29,7 +37,7 @@ export function AppNav() {
 
           <nav className="flex flex-col gap-1 flex-1">
             {links.map(({ href, label, Icon }) => {
-              const active = pathname === href || pathname.startsWith(href + "/")
+              const active = href === activeHref
               return (
                 <Link
                   key={href}

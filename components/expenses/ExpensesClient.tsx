@@ -69,6 +69,7 @@ interface Props {
 export function ExpensesClient({ expenses, categories }: Props) {
   const router = useRouter()
   const [modal, setModal] = useState<ModalState>({ type: "closed" })
+  const [entryType, setEntryType] = useState<"expense" | "income">("expense")
   const [isPending, startTransition] = useTransition()
   const [formError, setFormError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
@@ -88,11 +89,13 @@ export function ExpensesClient({ expenses, categories }: Props) {
 
   function openCreate() {
     clearFormState()
+    setEntryType("expense")
     setModal({ type: "create" })
   }
 
   function openEdit(expense: ExpenseRow) {
     clearFormState()
+    setEntryType(expense.type ?? "expense")
     setModal({ type: "edit", expense })
   }
 
@@ -130,6 +133,7 @@ export function ExpensesClient({ expenses, categories }: Props) {
       description: formData.get("description") as string,
       categoryId: formData.get("categoryId") as string,
       date: formData.get("date") as string,
+      type: entryType,
     }
 
     const schema =
@@ -154,7 +158,7 @@ export function ExpensesClient({ expenses, categories }: Props) {
         }
         closeModal()
         router.refresh()
-        showToast("Expense added.")
+        showToast(entryType === "income" ? "Income added." : "Expense added.")
       } else if (modal.type === "edit") {
         const result = await updateExpense(modal.expense.id, parsed.data)
         if (!result.success) {
@@ -164,7 +168,7 @@ export function ExpensesClient({ expenses, categories }: Props) {
         }
         closeModal()
         router.refresh()
-        showToast("Expense updated.")
+        showToast(entryType === "income" ? "Income updated." : "Expense updated.")
       }
     })
   }
@@ -281,8 +285,12 @@ export function ExpensesClient({ expenses, categories }: Props) {
                           {catName}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold tabular-nums text-red-600 dark:text-red-400 whitespace-nowrap">
-                        -{formatAmount(expense.amountCents)}
+                      <td className={`px-4 py-3 text-right font-mono font-semibold tabular-nums whitespace-nowrap ${
+                        expense.type === "income"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {expense.type === "income" ? "+" : "-"}{formatAmount(expense.amountCents)}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
@@ -347,7 +355,9 @@ export function ExpensesClient({ expenses, categories }: Props) {
                       id="modal-title"
                       className="text-base font-semibold text-slate-900 dark:text-slate-50"
                     >
-                      {modal.type === "create" ? "Add Expense" : "Edit Expense"}
+                      {modal.type === "create"
+                        ? entryType === "income" ? "Add Income" : "Add Expense"
+                        : entryType === "income" ? "Edit Income" : "Edit Expense"}
                     </h2>
                     <button
                       onClick={closeModal}
@@ -360,6 +370,32 @@ export function ExpensesClient({ expenses, categories }: Props) {
 
                   <form key={formKey} onSubmit={handleSubmit} noValidate>
                     <div className="px-6 py-5 flex flex-col gap-5">
+                      {/* Expense / Income toggle */}
+                      <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden self-start">
+                        <button
+                          type="button"
+                          onClick={() => setEntryType("expense")}
+                          className={`px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                            entryType === "expense"
+                              ? "bg-indigo-600 text-white"
+                              : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                          }`}
+                        >
+                          Expense
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEntryType("income")}
+                          className={`px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                            entryType === "income"
+                              ? "bg-emerald-600 text-white"
+                              : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                          }`}
+                        >
+                          Income
+                        </button>
+                      </div>
+
                       {/* Banner error */}
                       {formError !== null && (
                         <div
@@ -558,7 +594,7 @@ export function ExpensesClient({ expenses, categories }: Props) {
                         {isPending
                           ? "Saving…"
                           : modal.type === "create"
-                          ? "Add Expense"
+                          ? entryType === "income" ? "Add Income" : "Add Expense"
                           : "Save Changes"}
                       </button>
                     </div>

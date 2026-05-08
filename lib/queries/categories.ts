@@ -6,6 +6,7 @@ import { Category } from "@/lib/models/Category"
 export type CategoryRow = {
   id: string
   name: string
+  isDefault: boolean
 }
 
 const DEFAULT_CATEGORIES = [
@@ -35,8 +36,16 @@ export async function getCategories(userId: string): Promise<CategoryRow[]> {
     Category.find({ userId }).lean(),
   ])
 
-  return [...defaultCats, ...userCats].map((doc) => ({
-    id: doc._id.toString(),
-    name: doc.name,
-  }))
+  return [
+    ...defaultCats.map((doc) => ({
+      id: doc._id.toString(),
+      name: doc.name,
+      isDefault: true,
+    })),
+    ...userCats.map((doc) => ({
+      id: doc._id.toString(),
+      name: doc.name,
+      isDefault: false,
+    })),
+  ]
 }

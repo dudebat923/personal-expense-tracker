@@ -6,7 +6,12 @@
       "Bash(Select-Object Name)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\tyler\\\\OneDrive\\\\Documents\\\\DevelopmentProjects\\\\personal-expense-tracker\" -Recurse -Directory)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem -Recurse -Force)"
     ]
   }
 }
