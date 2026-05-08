@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx jest *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\tyler\\\\OneDrive\\\\Documents\\\\DevelopmentProjects\\\\personal-expense-tracker\" -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(git add *)"
     ]
   }
 }
