@@ -1,14 +1,22 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/authOptions";
+import { redirect } from "next/navigation"
+import { getSession } from "@/lib/session"
+import { AppNav } from "@/components/AppNav"
 
 export default async function AppLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  const session = await getSession()
+  if (!session) redirect("/login")
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <AppNav />
+      {/* Offset content for fixed sidebar on desktop; pad bottom for mobile nav */}
+      <div className="md:pl-64 pb-16 md:pb-0">
+        <main>{children}</main>
+      </div>
+    </div>
+  )
 }
