@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation"
 import {
   HomeIcon,
   CreditCardIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline"
 import { signOut } from "next-auth/react"
 
 const links = [
   { href: "/dashboard", label: "Dashboard", Icon: HomeIcon },
   { href: "/expenses", label: "Expenses", Icon: CreditCardIcon },
+  { href: "/expenses/categories", label: "Categories", Icon: TagIcon },
 ]
 
 export function AppNav() {
