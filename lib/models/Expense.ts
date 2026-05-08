@@ -6,6 +6,7 @@ export interface IExpense extends Document {
   amountCents: number;
   description?: string;
   date: Date;
+  type: "expense" | "income";
 }
 
 const ExpenseSchema = new Schema<IExpense>({
@@ -14,6 +15,7 @@ const ExpenseSchema = new Schema<IExpense>({
   amountCents: { type: Number, required: true },
   description: { type: String },
   date: { type: Date, required: true },
+  type: { type: String, enum: ["expense", "income"], default: "expense" },
 });
 
 ExpenseSchema.index({ userId: 1 });

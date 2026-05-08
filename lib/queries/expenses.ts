@@ -10,6 +10,7 @@ export type ExpenseRow = {
   description: string
   categoryId: string
   date: string
+  type: "expense" | "income"
 }
 
 function toDateString(val: unknown): string {
@@ -26,6 +27,7 @@ export async function getExpenses(userId: string): Promise<ExpenseRow[]> {
     description: doc.description ?? "",
     categoryId: doc.categoryId.toString(),
     date: toDateString(doc.date),
+    type: (doc.type ?? "expense") as "expense" | "income",
   }))
 }
 
@@ -74,7 +76,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
 
   const [thisMonthAgg, lastMonthAgg, monthlyAgg, dailyAgg, recentDocs] = await Promise.all([
     Expense.aggregate([
-      { $match: { userId: uid, date: { $gte: thisMonthStart } } },
+      { $match: { userId: uid, date: { $gte: thisMonthStart }, type: { $ne: "income" } } },
       {
         $lookup: {
           from: "categories",
@@ -100,6 +102,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
         $match: {
           userId: uid,
           date: { $gte: lastMonthStart, $lt: thisMonthStart },
+          type: { $ne: "income" },
         },
       },
       {
@@ -113,7 +116,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
 
     // Monthly totals for the last 6 months (bar chart)
     Expense.aggregate([
-      { $match: { userId: uid, date: { $gte: sixMonthsAgoStart } } },
+      { $match: { userId: uid, date: { $gte: sixMonthsAgoStart }, type: { $ne: "income" } } },
       {
         $group: {
           _id: { year: { $year: "$date" }, month: { $month: "$date" } },
@@ -125,7 +128,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
 
     // Daily totals for current month (line chart)
     Expense.aggregate([
-      { $match: { userId: uid, date: { $gte: thisMonthStart } } },
+      { $match: { userId: uid, date: { $gte: thisMonthStart }, type: { $ne: "income" } } },
       {
         $group: {
           _id: { $dayOfMonth: "$date" },
@@ -155,6 +158,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
           categoryId: 1,
           categoryName: "$category.name",
           date: 1,
+          type: 1,
         },
       },
     ]),
@@ -214,6 +218,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
         categoryId: mongoose.Types.ObjectId
         categoryName: string
         date: Date
+        type?: string
       }) => ({
         id: doc._id.toString(),
         amountCents: doc.amountCents,
@@ -221,6 +226,7 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
         categoryId: doc.categoryId.toString(),
         categoryName: doc.categoryName ?? "Other",
         date: toDateString(doc.date),
+        type: (doc.type ?? "expense") as "expense" | "income",
       })
     ),
   }
@@ -239,5 +245,6 @@ export async function getExpenseById(
     description: doc.description ?? "",
     categoryId: doc.categoryId.toString(),
     date: toDateString(doc.date),
+    type: (doc.type ?? "expense") as "expense" | "income",
   }
 }

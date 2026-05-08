@@ -123,8 +123,12 @@ export function RecentExpensesList({ expenses }: Props) {
                   </p>
                 </div>
 
-                <span className="font-mono text-sm font-semibold tabular-nums text-red-600 dark:text-red-400 flex-shrink-0">
-                  -{formatCurrency(expense.amountCents)}
+                <span className={`font-mono text-sm font-semibold tabular-nums flex-shrink-0 ${
+                  expense.type === "income"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-red-600 dark:text-red-400"
+                }`}>
+                  {expense.type === "income" ? "+" : "-"}{formatCurrency(expense.amountCents)}
                 </span>
               </li>
             )

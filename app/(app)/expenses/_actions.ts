@@ -30,6 +30,7 @@ export async function createExpense(
       amountCents: parsed.data.amountCents,
       description: parsed.data.description,
       date: new Date(parsed.data.date),
+      type: parsed.data.type,
     })
     revalidatePath("/expenses")
     revalidatePath("/dashboard")
@@ -69,6 +70,7 @@ export async function updateExpense(
           amountCents: parsed.data.amountCents,
           description: parsed.data.description,
           date: new Date(parsed.data.date),
+          type: parsed.data.type,
         },
       },
       { new: true }
