@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "bcryptjs": "^3.0.3",
     "mongoose": "^9.6.1",
     "next": "16.2.5",
