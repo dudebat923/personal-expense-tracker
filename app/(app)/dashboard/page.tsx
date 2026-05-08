@@ -5,6 +5,7 @@ import { getExpenseSummary } from "@/lib/queries/expenses"
 import { SummaryCards } from "@/components/dashboard/SummaryCards"
 import { SpendingByCategory } from "@/components/dashboard/SpendingByCategory"
 import { RecentExpensesList } from "@/components/dashboard/RecentExpensesList"
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts"
 
 export default async function DashboardPage() {
   const session = await getSession()
@@ -50,6 +51,13 @@ export default async function DashboardPage() {
           <RecentExpensesList expenses={summary.recentExpenses} />
         </div>
       </div>
+
+      {/* Monthly spending + daily trend charts */}
+      <DashboardCharts
+        monthlyHistory={summary.monthlyHistory}
+        dailySpend={summary.dailySpend}
+        monthLabel={monthLabel}
+      />
     </div>
   )
 }

@@ -38,6 +38,16 @@ export type CategorySpend = {
 
 export type RecentExpenseRow = ExpenseRow & { categoryName: string }
 
+export type MonthlyPoint = {
+  label: string
+  expenseCents: number
+}
+
+export type DailyPoint = {
+  label: string
+  totalCents: number
+}
+
 export type DashboardSummary = {
   thisMonth: {
     totalCents: number
@@ -49,6 +59,8 @@ export type DashboardSummary = {
     count: number
   }
   recentExpenses: RecentExpenseRow[]
+  monthlyHistory: MonthlyPoint[]
+  dailySpend: DailyPoint[]
 }
 
 export async function getExpenseSummary(userId: string): Promise<DashboardSummary> {
@@ -58,8 +70,9 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
   const now = new Date()
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const sixMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
-  const [thisMonthAgg, lastMonthAgg, recentDocs] = await Promise.all([
+  const [thisMonthAgg, lastMonthAgg, monthlyAgg, dailyAgg, recentDocs] = await Promise.all([
     Expense.aggregate([
       { $match: { userId: uid, date: { $gte: thisMonthStart } } },
       {
@@ -98,6 +111,30 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
       },
     ]),
 
+    // Monthly totals for the last 6 months (bar chart)
+    Expense.aggregate([
+      { $match: { userId: uid, date: { $gte: sixMonthsAgoStart } } },
+      {
+        $group: {
+          _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+          totalCents: { $sum: "$amountCents" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]),
+
+    // Daily totals for current month (line chart)
+    Expense.aggregate([
+      { $match: { userId: uid, date: { $gte: thisMonthStart } } },
+      {
+        $group: {
+          _id: { $dayOfMonth: "$date" },
+          totalCents: { $sum: "$amountCents" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+
     Expense.aggregate([
       { $match: { userId: uid } },
       { $sort: { date: -1 } },
@@ -132,6 +169,24 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
     0
   )
 
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+  const monthlyHistory: MonthlyPoint[] = monthlyAgg.map(
+    (r: { _id: { year: number; month: number }; totalCents: number }) => ({
+      label: `${MONTH_NAMES[r._id.month - 1]} ${r._id.year}`,
+      expenseCents: r.totalCents,
+    })
+  )
+
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  const dailyMap = new Map<number, number>(
+    dailyAgg.map((r: { _id: number; totalCents: number }) => [r._id, r.totalCents])
+  )
+  const dailySpend: DailyPoint[] = Array.from({ length: daysInMonth }, (_, i) => ({
+    label: String(i + 1),
+    totalCents: dailyMap.get(i + 1) ?? 0,
+  }))
+
   return {
     thisMonth: {
       totalCents: thisMonthTotal,
@@ -149,6 +204,8 @@ export async function getExpenseSummary(userId: string): Promise<DashboardSummar
       totalCents: lastMonthAgg[0]?.totalCents ?? 0,
       count: lastMonthAgg[0]?.count ?? 0,
     },
+    monthlyHistory,
+    dailySpend,
     recentExpenses: recentDocs.map(
       (doc: {
         _id: mongoose.Types.ObjectId

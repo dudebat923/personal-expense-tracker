@@ -1,4 +1,16 @@
+"use client"
+import dynamic from "next/dynamic"
 import type { CategorySpend } from "@/lib/queries/expenses"
+
+const SpendingDoughnut = dynamic(
+  () => import("@/components/dashboard/SpendingDoughnut").then((m) => m.SpendingDoughnut),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 w-full rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+    ),
+  }
+)
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Food & Dining": "bg-rose-500",
@@ -47,7 +59,10 @@ export function SpendingByCategory({ byCategory, totalCents }: Props) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
+          <SpendingDoughnut byCategory={byCategory} totalCents={totalCents} />
+
+          <div className="flex flex-col gap-4">
           {byCategory.map((cat) => {
             const pct = totalCents > 0 ? (cat.totalCents / totalCents) * 100 : 0
             const barColor = CATEGORY_COLORS[cat.categoryName] ?? "bg-indigo-500"
@@ -74,6 +89,7 @@ export function SpendingByCategory({ byCategory, totalCents }: Props) {
               </div>
             )
           })}
+          </div>
         </div>
       )}
     </div>
